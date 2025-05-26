@@ -25,3 +25,13 @@ MemoryCaptures/
 # VSCode
 .vscode/
 *.code-workspace
+
+# Unity Collaborate
+.collabignore
+
+# Crash reports
+*.stacktrace
+
+# Rider IDE (使ってなければ無視してOK)
+.idea/
+*.sln.iml
