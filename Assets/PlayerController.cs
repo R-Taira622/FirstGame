@@ -15,6 +15,7 @@ public class PlayerController : MonoBehaviour
     public float knockbackForce = 1f; // この値はInspectorから直接変更できる＋そっちが優先！
     private bool isKnockback = false;
     private bool isInvincible = false;
+    private int lastDirection = 1;
 
     // Start is called before the first frame update
     void Start()
@@ -29,15 +30,39 @@ public class PlayerController : MonoBehaviour
     {
         // 左右キー入力をチェック（-1〜1の範囲）
         moveInput = Input.GetAxisRaw("Horizontal");
+        Debug.Log("moveInput: " + moveInput);
 
         // 向きを反転する（左向きのとき）
         if (moveInput != 0)
         {
-            GetComponent<SpriteRenderer>().flipX = moveInput < 0;
+            // GetComponent<SpriteRenderer>().flipX = moveInput < 0;
+
+            Vector3 scale = transform.localScale;
+            scale.x = Mathf.Abs(scale.x) * (moveInput < 0 ? -1 : 1);
+            transform.localScale = scale;
+            // アニメーション切り替え
+            animator.SetBool("isWalking", true);
+
+            // 向きが変わった時だけ処理
+            if (moveInput != lastDirection)
+            {
+                // 攻撃判定の位置を左右で切り替え
+                if (attackHitBox != null)
+                {
+                    Vector3 pos = attackHitBox.transform.localPosition;
+                    Debug.Log("HitBox X: " + pos.x);
+                    pos.x = Mathf.Abs(pos.x) * (moveInput < 0 ? -1 : 1);
+                    attackHitBox.transform.localPosition = pos;
+                }
+
+                lastDirection = (int)moveInput;
+            }
         }
 
-        // アニメーション切り替え
-        animator.SetBool("isWalking", moveInput != 0);
+        else
+        {
+            animator.SetBool("isWalking", false);
+        }
 
         // ジャンプ入力（スペースキー）
         if (Input.GetKeyDown(KeyCode.Space) && Mathf.Abs(rb.velocity.y) < 0.01f)
@@ -51,6 +76,7 @@ public class PlayerController : MonoBehaviour
             animator.SetTrigger("Attack");
             StartCoroutine(EnableHitBox());
         }
+
     }
 
     IEnumerator EnableHitBox()
@@ -106,4 +132,5 @@ public class PlayerController : MonoBehaviour
         isInvincible = false;
         isKnockback = false; // のけぞり解除
     }
+    
 }
